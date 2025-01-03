@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, final
 import httpx
 
 from textual import on
@@ -17,6 +17,7 @@ class AlexandriaApp(App):
     CSS_PATH = 'styles.tcss'
 
     books: reactive[List[Book]] = reactive([])
+    loading_books: reactive[bool] = reactive(False)
 
     def __init__(self):
         super().__init__()
@@ -25,16 +26,22 @@ class AlexandriaApp(App):
 
     @on(SearchBar.Submitted)
     async def search_books(self, event: SearchBar.Submitted):
+        self.loading_books = True
         async with httpx.AsyncClient(timeout=20.0) as client:
             r = await client.get('http://localhost:8080/api/books?title=' + event.value)
             books = r.json()
             self.books = [Book.from_json(book) for book in books]
             self.query_one(SearchBar).clear()
+            self.loading_books = False
 
     def compose(self) -> ComposeResult:
         yield AppHeader()
         yield SearchBar()
-        yield BooksView().data_bind(AlexandriaApp.books)
+        yield (
+            BooksView()
+                .data_bind(AlexandriaApp.books)
+                .data_bind(AlexandriaApp.loading_books)
+        )
         # yield AppFooter()
 
 

@@ -90,8 +90,11 @@ class BookView(Widget):
 
 class BooksView(Widget):
     books: reactive[List[Book]] = reactive([], recompose=True)
+    loading_books: reactive[bool] = reactive(False, recompose=True)
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
+            if self.loading_books:
+                yield LoadingIndicator()
             for book in self.books:
                 yield BookView(book)
