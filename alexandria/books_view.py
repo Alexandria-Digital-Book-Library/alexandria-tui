@@ -1,13 +1,13 @@
 from io import BytesIO
 from typing import List
-from textual import on
-from textual.containers import Horizontal, Vertical, VerticalScroll
+from textual import on, work
+from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.geometry import Spacing
 from textual.message import Message
 from textual.reactive import reactive
 from textual.app import ComposeResult
 from textual.widget import Widget
-from textual.widgets import Button, Static
+from textual.widgets import Button, LoadingIndicator, Static
 from rich_pixels import Pixels
 from PIL import Image
 import httpx
@@ -38,7 +38,6 @@ class DownloadButton(Button):
 class ImageWidget(Static):
     def __init__(self, pixels: Pixels):
         super().__init__()
-        self.classes = 'book-image'
         self.pixels = pixels
 
     def on_mount(self):
@@ -63,8 +62,12 @@ class BookView(Widget):
 
     async def on_book_view_load_image(self, event: LoadImage):
         event.stop()
+        self.download_image(event.url)
+
+    @work
+    async def download_image(self, url: str):
         async with httpx.AsyncClient(verify=False) as client:
-            url = event.url.replace("https://library.lol", "https://library.gift")
+            url = url.replace("https://library.lol", "https://library.gift")
             r = await client.get(url)
             size = 32, 32
             if r.status_code == 200:
@@ -78,8 +81,11 @@ class BookView(Widget):
                 yield Static(f"[b]{self.book.title}[/b]", classes="book-title")
                 yield Static(', '.join(self.book.authors), classes='book-authors')
                 yield DownloadButton(self.book)
-            if self.pixels is not None:
-                yield ImageWidget(self.pixels)
+            with Container(classes="book-image"):
+                if self.pixels is not None:
+                    yield ImageWidget(self.pixels)
+                else:
+                    yield LoadingIndicator()
 
 
 class BooksView(Widget):
