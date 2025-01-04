@@ -11,38 +11,48 @@ from alexandria.books_view import BooksView
 from alexandria.footer import AppFooter
 from alexandria.searchbar import SearchBar
 
+
 class AlexandriaApp(App):
     """App to download digital books."""
 
-    CSS_PATH = 'styles.tcss'
+    CSS_PATH = "styles.tcss"
 
     books: reactive[List[Book]] = reactive([])
     loading_books: reactive[bool] = reactive(False)
 
     def __init__(self):
         super().__init__()
-        self.title = 'Alexandria'
-        self.sub_title = 'Search online books'
+        self.title = "Alexandria"
+        self.sub_title = "Search online books"
 
     @on(SearchBar.Submitted)
     async def search_books(self, event: SearchBar.Submitted):
         self.loading_books = True
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            r = await client.get('http://localhost:8080/api/books?title=' + event.value)
-            books = r.json()
-            self.books = [Book.from_json(book) for book in books]
-            self.query_one(SearchBar).clear()
-            self.loading_books = False
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                r = await client.get(
+                    "http://localhost:8080/api/books?title=" + event.value
+                )
+                books = r.json()
+                self.books = [Book.from_json(book) for book in books]
+                self.query_one(SearchBar).clear()
+                self.loading_books = False
+        except:
+            self.notify(
+                "There was a problem fetching results\nPlease, try again later",
+                title="Error",
+                severity="error",
+            )
 
     def compose(self) -> ComposeResult:
         yield AppHeader()
         yield SearchBar()
         yield (
             BooksView()
-                .data_bind(AlexandriaApp.books)
-                .data_bind(AlexandriaApp.loading_books)
+            .data_bind(AlexandriaApp.books)
+            .data_bind(AlexandriaApp.loading_books)
         )
-        # yield AppFooter()
+        yield AppFooter()
 
 
 if __name__ == "__main__":

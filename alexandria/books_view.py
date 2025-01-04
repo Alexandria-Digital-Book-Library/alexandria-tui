@@ -21,6 +21,8 @@ class DownloadButton(Button):
         self.book = book
         self.styles.background_tint = self.color_for_extension()
 
+    # TODO: Create event for downloading the book
+
     def color_for_extension(self) -> str:
         match self.book.extension.upper():
             case "PDF":

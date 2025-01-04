@@ -10,7 +10,7 @@ SearchBar {
 }
 
 BooksView {
-    max-height: 80%;
+    height: 0;
 }
 
 BookView {
