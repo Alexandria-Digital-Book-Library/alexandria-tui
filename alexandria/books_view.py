@@ -17,7 +17,10 @@ from alexandria.book import Book
 
 class DownloadButton(Button):
     def __init__(self, book: Book):
-        super().__init__(label="🔽 " + book.extension.upper(), tooltip="Download " + book.extension.upper())
+        super().__init__(
+            label="🔽 " + book.extension.upper(),
+            tooltip="Download " + book.extension.upper(),
+        )
         self.book = book
         self.styles.background_tint = self.color_for_extension()
 
@@ -59,7 +62,7 @@ class BookView(Widget):
             self.url = url
 
     def on_mount(self):
-        self.log('image url: ' + self.book.image_url)
+        self.log("image url: " + self.book.image_url)
         self.post_message(self.LoadImage(self.book.image_url))
 
     async def on_book_view_load_image(self, event: LoadImage):
@@ -81,7 +84,7 @@ class BookView(Widget):
         with Horizontal(classes="book-view-container"):
             with Vertical(classes="book-metadata"):
                 yield Static(f"[b]{self.book.title}[/b]", classes="book-title")
-                yield Static(', '.join(self.book.authors), classes='book-authors')
+                yield Static(", ".join(self.book.authors), classes="book-authors")
                 yield DownloadButton(self.book)
             with Container(classes="book-image"):
                 if self.pixels is not None:
@@ -97,6 +100,8 @@ class BooksView(Widget):
     def compose(self) -> ComposeResult:
         with VerticalScroll():
             if self.loading_books:
-                yield LoadingIndicator()
+                with Vertical():
+                    yield Static("Searching books")
+                    yield LoadingIndicator()
             for book in self.books:
                 yield BookView(book)
