@@ -18,7 +18,7 @@ from alexandria.book import Book
 class DownloadButton(Button):
     def __init__(self, book: Book):
         super().__init__(
-            label="🔽 " + book.extension.upper(),
+            label=f"🔽 {book.extension.upper()} ({book.size})",
             tooltip="Download " + book.extension.upper(),
         )
         self.book = book
