@@ -39,3 +39,25 @@ Button {
     min-width: 10;
     border: none;
 }
+
+#empty-books {
+    border: round gray;
+    align: center middle;
+
+    Static {
+        text-align: center;
+    }
+}
+
+#search-books-loading-indicator {
+    align: center middle;
+    border: round gray;
+
+    Static {
+        text-align: center;
+    }
+
+    LoadingIndicator {
+        height: 1;
+    }
+}

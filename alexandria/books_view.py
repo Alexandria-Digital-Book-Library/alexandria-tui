@@ -24,7 +24,24 @@ class DownloadButton(Button):
         self.book = book
         self.styles.background_tint = self.color_for_extension()
 
-    # TODO: Create event for downloading the book
+    @on(Button.Pressed)
+    async def on_button_pressed(self, event: Button.Pressed):
+        event.stop()
+        self.download_book()
+
+    @work
+    async def download_book(self) -> None:
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                self.notify(f"Download started for {self.book.title}")
+                r = await client.get(self.book.download_url)
+                filename = self.book.title.replace(" ", "-") + "." + self.book.extension
+                with open(filename, "wb") as f:
+                    f.write(r.content)
+                self.notify(f"Downloaded book to {filename}")
+        except Exception as ex:
+            self.log("Failed to download book: " + str(ex))
+            self.notify("Failed to download book", severity="error")
 
     def color_for_extension(self) -> str:
         match self.book.extension.upper():
@@ -95,13 +112,8 @@ class BookView(Widget):
 
 class BooksView(Widget):
     books: reactive[List[Book]] = reactive([], recompose=True)
-    loading_books: reactive[bool] = reactive(False, recompose=True)
 
     def compose(self) -> ComposeResult:
         with VerticalScroll():
-            if self.loading_books:
-                with Vertical():
-                    yield Static("Searching books")
-                    yield LoadingIndicator()
             for book in self.books:
                 yield BookView(book)
