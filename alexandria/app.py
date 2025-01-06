@@ -1,4 +1,6 @@
 from typing import List
+from importlib import resources
+from pathlib import Path
 import httpx
 
 from textual import on, work
@@ -16,16 +18,21 @@ from alexandria.searchbar import SearchBar
 
 class AlexandriaApp(App):
     """App to download digital books."""
-
-    CSS_PATH = "styles.tcss"
-
     books: reactive[List[Book]] = reactive([], recompose=True)
     loading_books: reactive[bool] = reactive(False, recompose=True)
 
     def __init__(self):
+        self.CSS_PATH = self._get_css_path()
         super().__init__()
         self.title = "Alexandria"
         self.sub_title = "Search books online"
+
+    def _get_css_path(self):
+        try:
+            with resources.path('alexandria.assets', 'styles.css') as path:
+                return path
+        except Exception as _:
+            return Path(__file__).parent / "../assets/styles.tcss"
 
     @on(SearchBar.Submitted)
     async def handle_search_bar_submitted(self, event: SearchBar.Submitted):
@@ -44,7 +51,8 @@ class AlexandriaApp(App):
                     self.query_one(SearchBar).clear()
                 elif r.status_code == 400:
                     error = r.json()
-                    self.notify(error["error"], title="Error", severity="error")
+                    self.notify(error["error"],
+                                title="Error", severity="error")
         except:
             self.notify(
                 "There was a problem fetching results\nPlease, try again later",
@@ -70,8 +78,3 @@ class AlexandriaApp(App):
                 yield Static("Use the search bar to start looking for books")
 
         yield AppFooter()
-
-
-if __name__ == "__main__":
-    app = AlexandriaApp()
-    app.run()
