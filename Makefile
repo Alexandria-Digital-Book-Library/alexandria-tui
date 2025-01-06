@@ -12,4 +12,7 @@ run:
 run-raw:
 	python3 -m alexandria
 
+publish:
+	$(POETRY) publish
+
 .PHONY: build install run
