@@ -44,7 +44,7 @@ class AlexandriaApp(App):
         self.loading_books = True
         try:
             async with httpx.AsyncClient(timeout=20.0) as client:
-                r = await client.get(f"http://localhost:8080/api/books?title={title}")
+                r = await client.get(f"https://alexandria.up.railway.app/api/books?title={title}")
                 if r.status_code == 200:
                     books = r.json()
                     self.books = [Book.from_json(book) for book in books]

@@ -89,14 +89,21 @@ class BookView(Widget):
 
     @work
     async def download_image(self, url: str):
-        async with httpx.AsyncClient(verify=False) as client:
-            url = url.replace("https://library.lol", "https://library.gift")
-            r = await client.get(url)
-            size = 32, 32
-            if r.status_code == 200:
-                img = Image.open(BytesIO(r.content))
-                img.thumbnail(size, Image.Resampling.LANCZOS)
-                self.pixels = Pixels.from_image(img)
+        try:
+            async with httpx.AsyncClient(verify=False) as client:
+                self.log(f'Downloading image: {url}')
+                r = await client.get(url)
+                size = 32, 32
+                if r.status_code == 200:
+                    img = Image.open(BytesIO(r.content))
+                    img.thumbnail(size, Image.Resampling.LANCZOS)
+                    self.pixels = Pixels.from_image(img)
+                else:
+                    self.log(f"Failed to fetch image {
+                             url} for book {self.book.title}")
+        except Exception as ex:
+            self.log(
+                f'There was an error while fetching the book image: {ex.args}')
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes="book-view-container"):
