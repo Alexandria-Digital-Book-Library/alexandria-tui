@@ -5,6 +5,14 @@ Alexandria is an application for downloading EBooks.
 It is available for web, mobile and terminal. This repository contains the 
 source code for the terminal client.
 
+## Installation
+
+You can install from PyPI:
+
+```
+pip install alexandria-tui
+```
+
 ## Usage
 
 Usage is simple. Once installed, run the following command:
