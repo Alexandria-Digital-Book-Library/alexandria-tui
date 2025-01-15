@@ -1,4 +1,5 @@
 from io import BytesIO
+import webbrowser
 from typing import List
 from textual import on, work
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
@@ -33,12 +34,19 @@ class DownloadButton(Button):
     async def download_book(self) -> None:
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
+                if self.book.should_open_browser:
+                    webbrowser.open(self.book.download_url)
+                    return
+
                 self.notify(f"Download started for {self.book.title}")
                 r = await client.get(self.book.download_url)
+
                 filename = self.book.title.replace(
                     " ", "-") + "." + self.book.extension
+
                 with open(filename, "wb") as f:
                     f.write(r.content)
+
                 self.notify(f"Downloaded book to {filename}")
         except Exception as ex:
             self.log("Failed to download book: " + str(ex))
